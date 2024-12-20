@@ -92,7 +92,7 @@ def write_deduplicate_data(outfile, json_data):
         with open(outfile, 'w') as f:
             json.dump(json_data, f, indent=2)
     except:
-        sys.exit('Unable to write to {outfile}, exiting!')
+        sys.exit(f'Unable to write to {outfile}, exiting!')
 
 
 def main():
