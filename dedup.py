@@ -61,7 +61,12 @@ def update_records(records, uniques):
 
         updated_data = by_id_or_email.iloc[0].to_dict()
 
-        log_changes.append(get_differences(record, updated_data))
+        original = json.dumps(record)
+        new_data = json.dumps(updated_data)
+
+        log_changes.append(
+            (original, new_data, get_differences(record, updated_data)))
+
         new_records[id] = updated_data
     return new_records, log_changes
 
@@ -70,14 +75,15 @@ def update_records(records, uniques):
 def write_log_file(fname, all_data):
     try:
         with open(fname, 'w') as f:
-            for i, line in enumerate(all_data):
-                if not line:
-                    f.write('No changes to record ' + str(i+1) + '\n')
-                    continue
-                for entry in line:
-                    f.write(entry + '\n')
+            # tuple format is original json, update json, and list of changes
+            for orig, new_data, change_list in all_data:
+                f.write('original entry ' + orig + '\n')
+                f.write('updated entry: ' + new_data + '\n')
+                for line in change_list:
+                    f.write(line + '\n')
+                f.write('-------------------------\n')
     except:
-        sys.exit('Unable to write to {fname}, exiting!')
+        sys.exit(f'Unable to write to {fname}, exiting!')
 
 
 # write out deduplicated data to outfile
@@ -90,7 +96,6 @@ def write_deduplicate_data(outfile, json_data):
 
 
 def main():
-
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help='Input filename. Required')
     parser.add_argument('-l', '--log', default='changes.log',
